@@ -49,6 +49,7 @@ def addStyle(styletxt):
 
 def VerifyCSV(val):
     goodRow = []
+    val.replace(",\n", "\n")
     try:
         rows = csv.reader(val.splitlines())
         for row in rows:
