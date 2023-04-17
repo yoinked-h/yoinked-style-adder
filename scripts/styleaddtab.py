@@ -2,24 +2,25 @@ import modules.scripts as scripts
 import gradio as gr
 import csv
 from pathlib import Path
+from modules.shared import cmd_opts
 from modules.paths import script_path
-from modules import script_callbacks, paths
+from modules import script_callbacks
 def refresh():
-    csvpath = Path(script_path)
-    with open(csvpath.joinpath("styles.csv"), "r", encoding="utf-8") as f:
-        data = f.read()
-    goods = []
-    rows = csv.reader(data.splitlines())
+    csvpath = Path(cmd_opts.styles_file).parent
+    with open(csvpath.joinpath("styles.csv"), "r", encoding="utf-8-sig") as f:
+        csvdata = f.read()
+    validStyles = []
+    rows = csv.reader(csvdata.splitlines())
     for row in rows:
         if len(row) != 3:
-            pass #do nothing
+            pass 
         else:
-            goods.append(row)
+            validStyles.append(row)
     styles = []
-    for n in goods:
-        if "name" in n[0]:
+    for style in validStyles:
+        if "name" in style[0]:
             continue
-        styles.append(n[0])
+        styles.append(style[0])
     return styles
 styles = refresh()
 def on_ui_tabs():
@@ -63,26 +64,26 @@ def addStyle(styletxt):
     valid, styletxt = VerifyCSV(styletxt)
     if not valid:
         return styletxt
-    path = Path(script_path) #so from /webui/extensions/yoinked-style-adder/scripts/ to /webui/
+    path = Path(cmd_opts.styles_file).parent
     #now that we have the path, we can open the file
-    with open(path.joinpath("styles.csv"), "a", encoding="utf-8") as f:
+    with open(path.joinpath("styles.csv"), "a", encoding="utf-8-sig") as f:
         for obj in styletxt.split("\n"):
             f.write("\n")
             f.write(obj)
     #double \n handling
     data = ""
-    with open(path.joinpath("styles.csv"), "r", encoding="utf-8") as f:
+    with open(path.joinpath("styles.csv"), "r", encoding="utf-8-sig") as f:
         data = f.read()
     data = data.replace("\n\n", "\n")
-    with open(path.joinpath("styles.csv"), "w", encoding="utf-8") as f:
+    with open(path.joinpath("styles.csv"), "w", encoding="utf-8-sig") as f:
         f.write(data)
     if len(styletxt.split("\n")) == 1:
         return "Style added successfully!"
     return "Styles added successfully!" #small detail
 def actionIze(style, action):
     #open the csv
-    path = Path(script_path)
-    with open(path.joinpath("styles.csv"), "r", encoding="utf-8") as f:
+    path = Path(cmd_opts.styles_file).parent
+    with open(path.joinpath("styles.csv"), "r", encoding="utf-8-sig") as f:
         data = f.read()
     #read
     rows = csv.reader(data.splitlines())
@@ -110,7 +111,7 @@ def actionIze(style, action):
         if not validation:
             return "", "Couldnt find the style in the csv, try pressing the refresh button"
         data.replace("\n\n", "\n")
-        with open(path.joinpath("styles.csv"), "w", encoding="utf-8") as f:
+        with open(path.joinpath("styles.csv"), "w", encoding="utf-8-sig") as f:
             f.write(data)
         return "", "Style deleted successfully!"
     else:
